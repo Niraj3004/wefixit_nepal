@@ -1,8 +1,10 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
+    // "resolveJsonModule": true,
+    // "experimentalDecorators": true,
     // File Layout
-    // "rootDir": "./src",
+    "rootDir": "./",
     // "outDir": "./dist",
 
     // Environment Settings
@@ -33,12 +35,13 @@
     // "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
+    "esModuleInterop": true,
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
+    "skipLibCheck": true
   }
 }
