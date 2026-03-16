@@ -35,8 +35,26 @@ class AuthMiddleware {
       // Verify Token
       const decoded = verifyToken(token);
 
-      if (!decoded || typeof decoded === "string" || !decoded.id) {
+      if (!decoded || typeof decoded === "string") {
         res.status(403).json({
+          success: false,
+          message: MESSAGES.INVALID_OR_EXPIRED_TOKEN,
+        });
+        return;
+      }
+
+      // Handle Admin Accounts (Admins don't have an ID in the DB, they are hardcoded in ENV)
+      if (decoded.role === ROLES.ADMIN) {
+        req.user = {
+          role: ROLES.ADMIN,
+          email: decoded.email,
+        } as unknown as IUser;
+        return next();
+      }
+
+      // Handle Regular Users
+      if (!decoded.id) {
+         res.status(403).json({
           success: false,
           message: MESSAGES.INVALID_OR_EXPIRED_TOKEN,
         });
@@ -56,9 +74,10 @@ class AuthMiddleware {
       req.user = user;
       next();
     } catch (error) {
-      res.status(500).json({
+      // If token is expired or completely invalid, jsonwebtoken throws an error
+      res.status(403).json({
         success: false,
-        message: MESSAGES.INTERNAL_SERVER_ERROR,
+        message: MESSAGES.INVALID_OR_EXPIRED_TOKEN,
       });
     }
   }
