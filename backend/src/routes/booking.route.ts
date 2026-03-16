@@ -11,4 +11,11 @@ router.post(
   bookingController.createBooking
 );
 
+// PROTECTED: Clients can view their entire booking history
+router.get(
+  "/",
+  AuthMiddleware.isAuthenticated,
+  bookingController.getMyBookings
+);
+
 export default router;

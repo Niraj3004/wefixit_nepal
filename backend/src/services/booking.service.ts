@@ -1,8 +1,11 @@
 import mongoose from "mongoose";
 import Booking from "../models/booking.model";
 import RepairStatus from "../models/repairStatus.model";
+import User from "../models/user.model";
 import { REPAIR_STATUS } from "../constants/status";
 import { generateTrackingId } from "../utils/generateTrackingId";
+import { sendEmail } from "../utils/sendEmail";
+import { emailTemplates } from "../utils/emailTemplates";
 
 export const createBookingService = async (
   userId: string,
@@ -54,10 +57,32 @@ export const createBookingService = async (
     await session.commitTransaction();
     session.endSession();
 
+    // Send confirmation email asynchronously
+    try {
+      const user = await User.findById(userId);
+      if (user && user.email) {
+        const emailHtml = emailTemplates.bookingCreatedEmail(
+          user.firstName || "Client",
+          trackingId,
+          `${deviceType} - ${deviceModel}`
+        );
+        sendEmail(user.email, "Repair Booking Confirmed - WeFixIt", emailHtml).catch(
+            (err: any) => console.error("Failed to send booking confirmation email:", err)
+        );
+      }
+    } catch(err) {
+      console.error("Failed to fetch user for email confirmation: ", err)
+    }
+
     return booking;
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
     throw error;
   }
+};
+
+export const getMyBookingsService = async (userId: string) => {
+  const bookings = await Booking.find({ user: userId }).sort({ createdAt: -1 });
+  return bookings;
 };

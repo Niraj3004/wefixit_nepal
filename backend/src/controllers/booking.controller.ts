@@ -23,3 +23,16 @@ export const createBooking = catchAsyncError(async (req: IExtendRequest, res: Re
     data: booking,
   });
 });
+
+export const getMyBookings = catchAsyncError(async (req: IExtendRequest, res: Response, next: NextFunction) => {
+  // AuthMiddleware ensures this is populated
+  const userId = req.user?._id.toString() as string;
+
+  const bookings = await bookingService.getMyBookingsService(userId);
+
+  res.status(STATUS_CODES.OK).json({
+    success: true,
+    count: bookings.length,
+    data: bookings,
+  });
+});
