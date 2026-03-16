@@ -40,7 +40,7 @@
     "jsx": "react-jsx",
     "verbatimModuleSyntax": false,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
+    // "noUncheckedSideEffectImports": true,  // Requires TypeScript >= 5.6
     "moduleDetection": "force",
     "skipLibCheck": true
   }

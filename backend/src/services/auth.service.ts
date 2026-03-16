@@ -1,0 +1,193 @@
+import User from "../models/user.model";
+import { hashPassword, comparePassword } from "../utils/hash";
+import { generateToken } from "../utils/jwt";
+import { generateOTP } from "../utils/tokens";
+import { emailTemplates } from "../utils/emailTemplates";
+import { transporter } from "../config/mailer";
+import { ENV } from "../config/env.config";
+import { ROLES } from "../constants/role";
+
+/* =================================
+   REGISTER CLIENT
+================================= */
+export const registerClientService = async (data: any) => {
+  const { firstName, lastName, phone, email, currentAddress } = data;
+
+  const existingUser = await User.findOne({ email });
+
+  if (existingUser) {
+    throw new Error("User already exists");
+  }
+
+  const otp = generateOTP();
+
+  const user = await User.create({
+    firstName,
+    lastName,
+    phone,
+    email,
+    currentAddress,
+    role: ROLES.CLIENT,
+    otp,
+    otpExpiry: new Date(Date.now() + 10 * 60 * 1000),
+    isVerified: false,
+  });
+
+  await transporter.sendMail({
+    to: email,
+    subject: "Verify your account",
+    html: emailTemplates.otpEmail(email, otp),
+  });
+
+  return user;
+};
+
+/* =================================
+   VERIFY OTP
+================================= */
+export const verifyOtpService = async (
+  email: string,
+  otp: string,
+  password?: string
+) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.otp !== otp) {
+    throw new Error("Invalid OTP");
+  }
+
+  if (user.otpExpiry && user.otpExpiry < new Date()) {
+    throw new Error("OTP expired");
+  }
+
+  if (password) {
+    const hashedPassword = await hashPassword(password);
+    user.password = hashedPassword;
+  }
+
+  user.isVerified = true;
+  user.otp = undefined;
+
+  await user.save();
+
+  await transporter.sendMail({
+    to: user.email,
+    subject: "Welcome 🎉",
+    html: emailTemplates.welcomeEmail(user.firstName),
+  });
+
+  return true;
+};
+
+/* =================================
+   LOGIN SERVICE
+================================= */
+export const loginService = async (email: string, password: string) => {
+  // Admin login
+  if (email === ENV.ADMIN.EMAIL && password === ENV.ADMIN.PASSWORD) {
+    const token = generateToken({
+      role: ROLES.ADMIN,
+      email,
+    }) as string;
+
+    return {
+      role: ROLES.ADMIN,
+      token,
+    };
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (!user.isVerified) {
+    throw new Error("Account not verified");
+  }
+
+  if (!user.password) {
+    throw new Error("Password not set. Please verify your account first.");
+  }
+
+  const match = await comparePassword(password, user.password);
+
+  if (!match) {
+    throw new Error("Invalid credentials");
+  }
+
+  const secret = process.env.JWT_SECRET || ENV.JWT_SECRET || "";
+  if (!secret) throw new Error("JWT_SECRET is not defined");
+  
+  const token = generateToken({
+    id: user._id.toString(),
+    role: user.role,
+  }) as string;
+
+  return {
+    user,
+    token,
+  };
+};
+
+/* =================================
+   FORGOT PASSWORD
+================================= */
+export const forgotPasswordService = async (email: string) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const otp = generateOTP();
+
+  user.otp = otp;
+  user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+  await user.save();
+
+  await transporter.sendMail({
+    to: email,
+    subject: "Reset Password OTP",
+    html: emailTemplates.resetPasswordEmail(email, otp),
+  });
+
+  return true;
+};
+
+/* =================================
+   RESET PASSWORD
+================================= */
+export const resetPasswordService = async (
+  email: string,
+  otp: string,
+  newPassword: string,
+) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.otp !== otp) {
+    throw new Error("Invalid OTP");
+  }
+
+  if (user.otpExpiry && user.otpExpiry < new Date()) {
+    throw new Error("OTP expired");
+  }
+
+  const hashedPassword = await hashPassword(newPassword);
+
+  user.password = hashedPassword;
+  user.otp = undefined;
+
+  await user.save();
+
+  return true;
+};

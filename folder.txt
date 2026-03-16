@@ -1,0 +1,79 @@
+backend
+│
+├── src
+│
+│   ├── config
+│   │   ├── db.ts
+│   │   ├── cloudinary.ts
+│   │   └── mailer.ts
+│
+│   ├── constants
+│   │   ├── messages.ts
+│   │   ├── role.constant.ts
+│   │   └── statusCodes.ts
+│
+│   ├── controllers
+│   │   ├── auth.controller.ts
+│   │   ├── user.controller.ts
+│   │   ├── booking.controller.ts
+│   │   ├── tracking.controller.ts
+│   │   ├── admin.controller.ts
+│   │   ├── notification.controller.ts
+│   │   ├── chatbot.controller.ts
+│   │   └── invoice.controller.ts
+│
+│   ├── middlewares
+│   │   ├── asyncErrorHandle.ts
+│   │   ├── auth.middleware.ts
+│   │   ├── error.middleware.ts
+│   │   └── validateZod.ts
+│
+│   ├── models
+│   │   ├── User.ts
+│   │   ├── Booking.ts
+│   │   ├── Device.ts
+│   │   ├── RepairStatus.ts
+│   │   ├── Notification.ts
+│   │   └── Invoice.ts
+│
+│   ├── routes
+│   │   ├── auth.routes.ts
+│   │   ├── user.routes.ts
+│   │   ├── booking.routes.ts
+│   │   ├── tracking.routes.ts
+│   │   ├── admin.routes.ts
+│   │   ├── notification.routes.ts
+│   │   └── chatbot.routes.ts
+│
+│   ├── services
+│   │   ├── auth.service.ts
+│   │   ├── user.service.ts
+│   │   ├── booking.service.ts
+│   │   ├── tracking.service.ts
+│   │   ├── notification.service.ts
+│   │   ├── chatbot.service.ts
+│   │   ├── invoice.service.ts
+│   │   └── admin.service.ts
+│
+│   ├── utils
+│   │   ├── hash.ts
+│   │   ├── jwt.ts
+│   │   ├── multer.ts
+│   │   ├── response.ts
+│   │   ├── tokens.ts
+│   │   └── generateBookingId.ts
+│
+│   ├── validations
+│   │   ├── auth.validation.ts
+│   │   ├── booking.validation.ts
+│   │   └── user.validation.ts
+│
+│   ├── app.ts
+│   └── server.ts
+│
+├── .env
+├── .gitignore
+├── package.json
+├── tsconfig.json
+├── nodemon.json
+└── README.md

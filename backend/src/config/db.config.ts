@@ -1,21 +1,22 @@
 import mongoose from "mongoose";
-import { ENV } from "./env.config"; 
+import { ENV } from "./env.config";
 
-export async function connectToDatabase(): Promise<void> {
+export async function connectToDatabase() {
+  const mongoUri = ENV.MONGO_URI;
+  const dbName = ENV.DATABASE_NAME;
+  if (!mongoUri) {
+    throw new Error("MONGO URI is not define .env file");
+  }
+  if (!dbName) {
+    throw new Error("DATABASE_NAME is not defined in the .env file");
+  }
+
   try {
-    // FIX: Add '!' after ENV.MONGO_URI and ENV.DATABASE_NAME
-    // This tells TypeScript: "I promise these are not undefined"
-    const conn = await mongoose.connect(ENV.MONGO_URI!, { 
-      dbName: ENV.DATABASE_NAME! 
+    await mongoose.connect(mongoUri, {
+      dbName,
     });
-
-    console.log(`🔌 Connected to ${ENV.DB_TYPE} MongoDB: ${conn.connection.host}`);
+    console.log("🔌 Connection to Mongoose!");
   } catch (err) {
-    if (err instanceof Error) {
-      console.error(`😭 Mongoose connection error: ${err.message}`);
-    } else {
-      console.error("😭 Unknown Mongoose connection error", err);
-    }
-    process.exit(1);
+    console.log("😭Mongoose connection error:", err);
   }
 }

@@ -1,31 +1,16 @@
-// config file
-import { config } from "dotenv";
-config();
+import dotenv from "dotenv";
+
+dotenv.config();
+
 export const ENV = {
-  PORT: process.env.PORT || 5000,
+  PORT: process.env.PORT ? Number(process.env.PORT) : 4000,
   MONGO_URI: process.env.MONGO_URI,
   DATABASE_NAME: process.env.DATABASE_NAME,
-
-  // middleware confi
-//   JWT_SECRET: process.env.jwtSecretKey,
-//   JWT_EXPIRES_IN: process.env.jwtExpiresIn,
-
-  // mail configure
-//   EMAIL: {
-//     USER: process.env.EMAIL_USER,
-//     PASS: process.env.EMAIL_PASS,
-//   },
-
-  // Cloundinary configure
-//   CLOUDINARY: {
-//     CLOUD_NAME: process.env.CLOUNDINARY_CLOUD_NAME,
-//     API_KEY: process.env.CLOUNDINARY_API_KEY,
-//     API_SECRET: process.env.CLOUNDINARY_API_SECRET,
-//   },
+  JWT_SECRET: process.env.JWT_SECRET,
+  EMAIL_USER: process.env.EMAIL_USER,
+  EMAIL_PASS: process.env.EMAIL_PASS,
+  ADMIN: {
+    EMAIL: process.env.ADMIN_EMAIL,
+    PASSWORD: process.env.ADMIN_PASSWORD,
+  },
 };
-if (!ENV.MONGO_URI || !ENV.DATABASE_NAME) {
-  console.error("❌ ERROR: MONGO_URI is not defined in .env file");
-  process.exit(1);
-} else {
-  console.log("✅ Environment variables loaded successfully!");
-}
