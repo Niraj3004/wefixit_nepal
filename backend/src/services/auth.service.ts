@@ -48,7 +48,7 @@ export const registerClientService = async (data: any) => {
 export const verifyOtpService = async (
   email: string,
   otp: string,
-  password?: string
+  password?: string,
 ) => {
   const user = await User.findOne({ email });
 
@@ -122,7 +122,7 @@ export const loginService = async (email: string, password: string) => {
 
   const secret = process.env.JWT_SECRET || ENV.JWT_SECRET || "";
   if (!secret) throw new Error("JWT_SECRET is not defined");
-  
+
   const token = generateToken({
     id: user._id.toString(),
     role: user.role,

@@ -2,10 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-
-import authRoutes from "./routes/auth.route";
-import bookingRoutes from "./routes/booking.route";
-import trackingRoutes from "./routes/tracking.route";
+import router from "./routes/index";
 import { errorHandler } from "./middlewares/error.middleware";
 
 const app = express();
@@ -19,15 +16,19 @@ const limiter = rateLimit({
 
 // Security Middleware
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  }),
+);
+
 app.use(limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/auth", authRoutes);
-app.use("/api/booking", bookingRoutes);
-app.use("/api/tracking", trackingRoutes);
+app.use("/", router);
 
 // Global Error Handler Middleware
 app.use(errorHandler);

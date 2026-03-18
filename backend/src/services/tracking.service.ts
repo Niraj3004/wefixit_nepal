@@ -3,6 +3,7 @@ import RepairStatus from "../models/repairStatus.model";
 import User from "../models/user.model";
 import { sendEmail } from "../utils/sendEmail";
 import { emailTemplates } from "../utils/emailTemplates";
+import { getIO } from "../server";
 
 export const getTrackingTimelineService = async (trackingId: string) => {
   const booking = await Booking.findOne({ trackingId });
@@ -44,7 +45,14 @@ export const updateTrackingStatusService = async (
     notes,
     updatedBy: userId,
   });
-
+  //socket.io
+  const io = getIO();
+  io.to(booking.user.toString()).emit("trackingUpdated", {
+    bookingId,
+    status,
+    notes,
+    timeline: newStatus,
+  });
   // Fetch the user to get their email
   const user = await User.findById(booking.user);
 

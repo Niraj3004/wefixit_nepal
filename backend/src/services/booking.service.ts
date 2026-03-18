@@ -6,12 +6,13 @@ import { REPAIR_STATUS } from "../constants/status";
 import { generateTrackingId } from "../utils/generateTrackingId";
 import { sendEmail } from "../utils/sendEmail";
 import { emailTemplates } from "../utils/emailTemplates";
+import { getIO } from "../server";
 
 export const createBookingService = async (
   userId: string,
   deviceType: string,
   deviceModel: string,
-  issueDescription: string
+  issueDescription: string,
 ) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -32,7 +33,7 @@ export const createBookingService = async (
           currentStatus: REPAIR_STATUS.PENDING_DROP_OFF,
         },
       ],
-      { session }
+      { session },
     );
 
     const booking = bookingArray[0];
@@ -51,11 +52,17 @@ export const createBookingService = async (
           updatedBy: userId,
         },
       ],
-      { session }
+      { session },
     );
 
     await session.commitTransaction();
     session.endSession();
+    //scoket.io
+    const io = getIO();
+    io.to(userId).emit("bookingCreated", {
+      booking,
+      message: "Booking created successfully",
+    });
 
     // Send confirmation email asynchronously
     try {
@@ -64,14 +71,18 @@ export const createBookingService = async (
         const emailHtml = emailTemplates.bookingCreatedEmail(
           user.firstName || "Client",
           trackingId,
-          `${deviceType} - ${deviceModel}`
+          `${deviceType} - ${deviceModel}`,
         );
-        sendEmail(user.email, "Repair Booking Confirmed - WeFixIt", emailHtml).catch(
-            (err: any) => console.error("Failed to send booking confirmation email:", err)
+        sendEmail(
+          user.email,
+          "Repair Booking Confirmed - WeFixIt",
+          emailHtml,
+        ).catch((err: any) =>
+          console.error("Failed to send booking confirmation email:", err),
         );
       }
-    } catch(err) {
-      console.error("Failed to fetch user for email confirmation: ", err)
+    } catch (err) {
+      console.error("Failed to fetch user for email confirmation: ", err);
     }
 
     return booking;
