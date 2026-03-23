@@ -74,3 +74,9 @@ export const generateInvoice = catchAsyncError(async (req: Request, res: Respons
   const result = await adminService.generateInvoiceService(bookingId);
   res.status(STATUS_CODES.OK).json({ success: true, message: result.message });
 });
+
+export const sendCustomNotification = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+  const { userId, title, message, type } = req.body;
+  const notification = await adminService.sendCustomNotificationService(userId, title, message, type);
+  res.status(STATUS_CODES.CREATED).json({ success: true, data: notification });
+});

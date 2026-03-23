@@ -8,6 +8,9 @@ import RoleMiddleware from "../middlewares/role.middleware";
 const authMiddleware = AuthMiddleware.isAuthenticated;
 const authorizeRole = (role: string) => RoleMiddleware.restrictTo(role as any);
 
+import { validateZod } from "../middlewares/validationzod";
+import { userIdParamSchema, updateBookingStatusSchema, sendNotificationSchema } from "../validations/admin.validation";
+
 const router: Router = express.Router();
 
 router.route("/dashboard").get(
@@ -25,6 +28,7 @@ router.route("/users").get(
 router.route("/users/:id").delete(
   authMiddleware,
   authorizeRole("admin"),
+  validateZod(userIdParamSchema),
   adminController.deleteUser
 );
 
@@ -37,6 +41,7 @@ router.route("/bookings").get(
 router.route("/booking/:id").put(
   authMiddleware,
   authorizeRole("admin"),
+  validateZod(updateBookingStatusSchema),
   adminController.updateBookingStatus
 );
 
@@ -56,6 +61,13 @@ router.route("/invoice/:id/verify").put(
   authMiddleware,
   authorizeRole("admin"),
   invoiceController.verifyPayment
+);
+
+router.route("/send-notification").post(
+  authMiddleware,
+  authorizeRole("admin"),
+  validateZod(sendNotificationSchema),
+  adminController.sendCustomNotification
 );
 
 export default router;

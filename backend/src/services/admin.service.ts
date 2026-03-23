@@ -3,6 +3,7 @@ import User from "../models/user.model";
 import { REPAIR_STATUS } from "../constants/status";
 import { generateInvoicePDF } from "../utils/pdfGenerator";
 import { sendEmail, emailTemplates } from "../utils/emailTemplates";
+import { Notification } from "../models/notification.model";
 import fs from "fs";
 
 export const getDashboardStatsService = async () => {
@@ -109,4 +110,36 @@ export const generateInvoiceService = async (bookingId: string) => {
   }
 
   return { message: "Invoice generated and sent to customer successfully" };
+};
+
+export const sendCustomNotificationService = async (
+  userId: string,
+  title: string,
+  message: string,
+  type: string = "ALERT"
+) => {
+  const user = await User.findById(userId);
+  if (!user) throw new Error("User not found");
+
+  const notification = await Notification.create({
+    user: userId,
+    title,
+    message,
+    type,
+    isRead: false,
+  });
+
+  if (user.email) {
+    const emailHtml = emailTemplates.customAnnouncementEmail(
+      user.firstName || "Client",
+      title,
+      message
+    );
+
+    sendEmail(user.email, title, emailHtml).catch(err => {
+      console.error("Failed to send custom notification email", err);
+    });
+  }
+
+  return notification;
 };

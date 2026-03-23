@@ -4,12 +4,16 @@ import AuthMiddleware from "../middlewares/auth.middleware";
 import { upload } from "../utils/multer";
 import { ROLES } from "../constants/role";
 
+import { validateZod } from "../middlewares/validationzod";
+import { createBookingSchema } from "../validations/booking.validation";
+
 const router: Router = express.Router();
 
 // PROTECTED: Clients can create a repair booking (with images)
 router.route("/").post(
   AuthMiddleware.isAuthenticated,
   upload.array("images", 5),
+  validateZod(createBookingSchema),
   bookingController.createBooking
 );
 

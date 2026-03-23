@@ -159,4 +159,13 @@ export const emailTemplates = {
 
     <p>If you selected drop-off, please bring your device to our service center. If you selected pickup, our team will coordinate with you shortly.</p>`
   ),
+
+  customAnnouncementEmail: (name: string, title: string, message: string) => baseEmailTemplate(
+    title,
+    `<h2>${title}</h2>
+    <p>Hello <strong>${name}</strong>,</p>
+    <p style="white-space: pre-wrap;">${message}</p>
+    <br/>
+    <p>If you have any questions, feel free to reply directly to this email or contact our support team.</p>`
+  ),
 };
