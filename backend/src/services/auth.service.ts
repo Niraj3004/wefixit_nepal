@@ -2,8 +2,7 @@ import User from "../models/user.model";
 import { hashPassword, comparePassword } from "../utils/hash";
 import { generateToken } from "../utils/jwt";
 import { generateOTP } from "../utils/tokens";
-import { emailTemplates } from "../utils/emailTemplates";
-import { transporter } from "../config/mailer";
+import { emailTemplates, sendEmail } from "../utils/emailTemplates";
 import { ENV } from "../config/env.config";
 import { ROLES } from "../constants/role";
 
@@ -33,11 +32,11 @@ export const registerClientService = async (data: any) => {
     isVerified: false,
   });
 
-  await transporter.sendMail({
-    to: email,
-    subject: "Verify your account",
-    html: emailTemplates.otpEmail(email, otp),
-  });
+  await sendEmail(
+    email,
+    "Verify your account",
+    emailTemplates.otpEmail(email, otp)
+  );
 
   return user;
 };
@@ -74,11 +73,11 @@ export const verifyOtpService = async (
 
   await user.save();
 
-  await transporter.sendMail({
-    to: user.email,
-    subject: "Welcome 🎉",
-    html: emailTemplates.welcomeEmail(user.firstName),
-  });
+  await sendEmail(
+    user.email,
+    "Welcome 🎉",
+    emailTemplates.welcomeEmail(user.firstName)
+  );
 
   return true;
 };
@@ -151,11 +150,11 @@ export const forgotPasswordService = async (email: string) => {
 
   await user.save();
 
-  await transporter.sendMail({
-    to: email,
-    subject: "Reset Password OTP",
-    html: emailTemplates.resetPasswordEmail(email, otp),
-  });
+  await sendEmail(
+    email,
+    "Reset Password OTP",
+    emailTemplates.resetPasswordEmail(email, otp)
+  );
 
   return true;
 };

@@ -5,6 +5,7 @@ export interface IRepairStatus extends Document {
   bookingId: mongoose.Types.ObjectId;
   status: string;
   notes?: string;
+  isInternal: boolean;
   updatedBy: string;
   createdAt: Date;
   updatedAt: Date;
@@ -25,6 +26,10 @@ const repairStatusSchema = new Schema<IRepairStatus>(
     },
     notes: {
       type: String,
+    },
+    isInternal: {
+      type: Boolean,
+      default: false,
     },
     updatedBy: {
       type: String,

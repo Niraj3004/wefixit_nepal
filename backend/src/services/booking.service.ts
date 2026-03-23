@@ -4,14 +4,36 @@ import RepairStatus from "../models/repairStatus.model";
 import User from "../models/user.model";
 import { REPAIR_STATUS } from "../constants/status";
 import { generateTrackingId } from "../utils/generateTrackingId";
-import { sendEmail } from "../utils/sendEmail";
-import { emailTemplates } from "../utils/emailTemplates";
+import { sendEmail, emailTemplates } from "../utils/emailTemplates";
+import { generateInvoicePDF } from "../utils/pdfGenerator";
+
+export const downloadInvoiceService = async (bookingId: string, userId: string) => {
+  const booking = await Booking.findOne({ _id: bookingId, user: userId }).populate("user", "firstName lastName email");
+  
+  if (!booking) throw new Error("Booking not found or you do not have permission to access it");
+  if (booking.currentStatus !== REPAIR_STATUS.COMPLETED) throw new Error("Invoice is only available for completed repairs");
+
+  const user = booking.user as any;
+  const filePath = await generateInvoicePDF({
+    trackingId: booking.trackingId,
+    customerName: user.firstName + " " + (user.lastName || ""),
+    customerEmail: user.email,
+    deviceType: booking.deviceType,
+    deviceModel: booking.deviceModel,
+    issueDescription: booking.issueDescription,
+    price: booking.price || 0,
+    date: new Date()
+  });
+
+  return filePath;
+};
 
 export const createBookingService = async (
   userId: string,
   deviceType: string,
   deviceModel: string,
-  issueDescription: string
+  issueDescription: string,
+  deviceImages: string[] = []
 ) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -29,6 +51,7 @@ export const createBookingService = async (
           deviceType,
           deviceModel,
           issueDescription,
+          deviceImages,
           currentStatus: REPAIR_STATUS.PENDING_DROP_OFF,
         },
       ],
@@ -85,4 +108,23 @@ export const createBookingService = async (
 export const getMyBookingsService = async (userId: string) => {
   const bookings = await Booking.find({ user: userId }).sort({ createdAt: -1 });
   return bookings;
+};
+
+export const getAllBookingsService = async (page: number = 1, limit: number = 10, status?: string) => {
+  const query: any = {};
+  if (status) {
+    query.currentStatus = status;
+  }
+
+  const skip = (page - 1) * limit;
+
+  const bookings = await Booking.find(query)
+    .populate("user", "firstName lastName email phone")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const total = await Booking.countDocuments(query);
+
+  return { bookings, total, page, limit };
 };

@@ -4,9 +4,6 @@ import { verifyToken } from "../utils/jwt";
 import { ROLES } from "../constants/role";
 import { MESSAGES } from "../constants/messages";
 
-// Derive RoleType from the ROLES constant values
-type RoleType = (typeof ROLES)[keyof typeof ROLES];
-
 export interface IExtendRequest extends Request {
   user?: IUser;
 }
@@ -80,23 +77,6 @@ class AuthMiddleware {
         message: MESSAGES.INVALID_OR_EXPIRED_TOKEN,
       });
     }
-  }
-
-  static restrictTo(...allowedRoles: RoleType[]) {
-    return (req: IExtendRequest, res: Response, next: NextFunction) => {
-      const userRole = req.user?.role as RoleType;
-      console.log("User Role:", userRole);
-
-      if (!allowedRoles.includes(userRole)) {
-        res.status(403).json({
-          success: false,
-          message: MESSAGES.FORBIDDEN,
-        });
-        return;
-      }
-
-      next();
-    };
   }
 }
 

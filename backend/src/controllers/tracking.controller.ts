@@ -23,7 +23,7 @@ export const getTrackingStatus = catchAsyncError(async (req: Request, res: Respo
 
 export const updateStatus = catchAsyncError(async (req: IExtendRequest, res: Response, next: NextFunction) => {
   const { bookingId } = req.params;
-  const { status, notes } = req.body;
+  const { status, notes, price, isInternal } = req.body;
 
   // AuthMiddleware ensures this is populated
   const userId = req.user?._id?.toString() || req.user?.email || "System";
@@ -33,6 +33,8 @@ export const updateStatus = catchAsyncError(async (req: IExtendRequest, res: Res
     status as string,
     notes as string,
     userId as string,
+    price ? Number(price) : undefined,
+    isInternal === true
   );
 
   res.status(STATUS_CODES.CREATED).json({

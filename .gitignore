@@ -36,3 +36,8 @@ frontend/.env
 .idea/
 *.swp
 
+# ========================
+# Excluded Docs
+# ========================
+folder.txt
+api_guide.md

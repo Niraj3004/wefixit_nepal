@@ -1,21 +1,28 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import * as bookingController from "../controllers/booking.controller";
 import AuthMiddleware from "../middlewares/auth.middleware";
+import { upload } from "../utils/multer";
+import { ROLES } from "../constants/role";
 
-const router = Router();
+const router: Router = express.Router();
 
-// PROTECTED: Clients can create a repair booking
-router.post(
-  "/",
+// PROTECTED: Clients can create a repair booking (with images)
+router.route("/").post(
   AuthMiddleware.isAuthenticated,
+  upload.array("images", 5),
   bookingController.createBooking
 );
 
 // PROTECTED: Clients can view their entire booking history
-router.get(
-  "/",
+router.route("/").get(
   AuthMiddleware.isAuthenticated,
   bookingController.getMyBookings
+);
+
+// PROTECTED: Clients can download the official PDF invoice for a completed repair
+router.route("/:id/invoice").get(
+  AuthMiddleware.isAuthenticated,
+  bookingController.downloadInvoice
 );
 
 export default router;

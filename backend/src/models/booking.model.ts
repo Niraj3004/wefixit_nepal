@@ -7,7 +7,9 @@ export interface IBooking extends Document {
   deviceType: string;
   deviceModel: string;
   issueDescription: string;
+  deviceImages?: string[];
   currentStatus: string;
+  price?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +21,8 @@ const bookingSchema = new Schema<IBooking>(
     deviceType: { type: String, required: true },
     deviceModel: { type: String, required: true },
     issueDescription: { type: String, required: true },
+    deviceImages: { type: [String], default: [] },
+    price: { type: Number, default: 0 },
     currentStatus: {
       type: String,
       enum: Object.values(REPAIR_STATUS),

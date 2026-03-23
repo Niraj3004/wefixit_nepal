@@ -7,6 +7,7 @@ import http from "http";
 // import db configure
 import { connectToDatabase } from "./config/db.config";
 import { ENV } from "./config/env.config";
+import { initSocket } from "./socket";
 
 
 connectToDatabase();
@@ -14,6 +15,7 @@ connectToDatabase();
 const server = http.createServer(app);
 
 // ecport io instance for controllers ko lagai
+initSocket(server);
 
 // create server
 const startServer = () => {
