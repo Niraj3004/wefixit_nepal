@@ -8,6 +8,12 @@ import { invoiceIdParamSchema } from "../validations/invoice.validation";
 
 const router: Router = express.Router();
 
+// User gets their invoices
+router.route("/").get(
+  AuthMiddleware.isAuthenticated,
+  invoiceController.getMyInvoices
+);
+
 // User uploads QR payment proof
 router.route("/:id/upload-payment").post(
   AuthMiddleware.isAuthenticated,

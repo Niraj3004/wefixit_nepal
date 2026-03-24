@@ -29,3 +29,9 @@ export const verifyPayment = catchAsyncError(async (req: IExtendRequest, res: Re
   const invoice = await invoiceService.verifyPaymentService(invoiceId, action);
   res.status(STATUS_CODES.OK).json({ success: true, message: `Payment ${action.toLowerCase()}d successfully`, data: invoice });
 });
+
+export const getMyInvoices = catchAsyncError(async (req: IExtendRequest, res: Response, next: NextFunction) => {
+  const userId = req.user?._id.toString() as string;
+  const invoices = await invoiceService.getMyInvoicesService(userId);
+  res.status(STATUS_CODES.OK).json({ success: true, count: invoices.length, data: invoices });
+});

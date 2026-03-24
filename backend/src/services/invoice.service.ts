@@ -28,3 +28,10 @@ export const verifyPaymentService = async (invoiceId: string, action: 'APPROVE' 
   await invoice.save();
   return invoice;
 };
+
+export const getMyInvoicesService = async (userId: string) => {
+  const invoices = await Invoice.find({ user: userId })
+    .populate("booking", "deviceModel deviceType trackingId currentStatus")
+    .sort({ createdAt: -1 });
+  return invoices;
+};

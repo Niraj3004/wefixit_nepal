@@ -8,9 +8,11 @@ import http from "http";
 import { connectToDatabase } from "./config/db.config";
 import { ENV } from "./config/env.config";
 import { initSocket } from "./socket";
+import { seedAdmin } from "./config/seedAdmin";
 
-
-connectToDatabase();
+connectToDatabase().then(() => {
+  seedAdmin();
+});
 // create http server  from express app
 const server = http.createServer(app);
 

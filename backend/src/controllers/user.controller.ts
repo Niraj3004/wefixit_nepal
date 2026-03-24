@@ -29,10 +29,19 @@ export const updateMe = catchAsyncError(async (req: IExtendRequest, res: Respons
 
 export const changePassword = catchAsyncError(async (req: IExtendRequest, res: Response, next: NextFunction) => {
   const userId = req.user?._id?.toString();
-  if (!userId) throw new Error("Unauthorized access to user profile");
+  if (!userId) {
+    throw new Error("User unauthorized.");
+  }
 
-  const { oldPassword, newPassword } = req.body;
-  const result = await userService.changePasswordService(userId, oldPassword, newPassword);
+  const { currentPassword, newPassword } = req.body;
 
-  res.status(STATUS_CODES.OK).json({ success: true, message: result.message });
+  await userService.changePasswordService(userId, currentPassword, newPassword);
+
+  res.status(STATUS_CODES.OK).json({ success: true, message: "Password updated successfully" });
+});
+
+export const getAdmin = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+  const admin = await userService.getAdminService();
+  if (!admin) throw new Error("Support offline");
+  res.status(STATUS_CODES.OK).json({ success: true, data: { _id: admin._id, firstName: admin.firstName, lastName: admin.lastName }});
 });

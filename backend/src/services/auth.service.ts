@@ -12,15 +12,34 @@ import { ROLES } from "../constants/role";
 export const registerClientService = async (data: any) => {
   const { firstName, lastName, phone, email, currentAddress } = data;
 
-  const existingUser = await User.findOne({ email });
+  let user = await User.findOne({ email });
 
-  if (existingUser) {
-    throw new Error("User already exists");
+  if (user) {
+    if (user.isVerified) {
+      throw new Error("User already exists");
+    }
+    // User exists but not verified -> Resend OTP
+    const otp = generateOTP();
+    user.otp = otp;
+    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.phone = phone;
+    user.currentAddress = currentAddress;
+    await user.save();
+
+    await sendEmail(
+      email,
+      "Verify your account",
+      emailTemplates.otpEmail(email, otp)
+    );
+
+    return user;
   }
 
   const otp = generateOTP();
 
-  const user = await User.create({
+  user = await User.create({
     firstName,
     lastName,
     phone,
@@ -86,18 +105,7 @@ export const verifyOtpService = async (
    LOGIN SERVICE
 ================================= */
 export const loginService = async (email: string, password: string) => {
-  // Admin login
-  if (email === ENV.ADMIN.EMAIL && password === ENV.ADMIN.PASSWORD) {
-    const token = generateToken({
-      role: ROLES.ADMIN,
-      email,
-    }) as string;
 
-    return {
-      role: ROLES.ADMIN,
-      token,
-    };
-  }
 
   const user = await User.findOne({ email });
 
@@ -105,7 +113,8 @@ export const loginService = async (email: string, password: string) => {
     throw new Error("User not found");
   }
 
-  if (!user.isVerified) {
+  // Admins are verified bypass explicitly
+  if (!user.isVerified && user.role !== ROLES.ADMIN) {
     throw new Error("Account not verified");
   }
 
@@ -184,6 +193,7 @@ export const resetPasswordService = async (
   const hashedPassword = await hashPassword(newPassword);
 
   user.password = hashedPassword;
+  user.isVerified = true;  // Mark email as verified if they successfully reset password
   user.otp = undefined;
 
   await user.save();

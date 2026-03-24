@@ -40,17 +40,20 @@ class AuthMiddleware {
         return;
       }
 
-      // Handle Admin Accounts (Admins don't have an ID in the DB, they are hardcoded in ENV)
-      if (decoded.role === ROLES.ADMIN) {
-        req.user = {
-          role: ROLES.ADMIN,
-          email: decoded.email,
-        } as unknown as IUser;
-        return next();
-      }
+
 
       // Handle Regular Users
-      if (!decoded.id) {
+      let userId = decoded.id;
+
+      // Seamless migration of old ghost Admin tokens!
+      if (!userId && decoded.role === ROLES.ADMIN) {
+        const adminDoc = await User.findOne({ email: decoded.email, role: ROLES.ADMIN });
+        if (adminDoc) {
+          userId = adminDoc._id.toString();
+        }
+      }
+
+      if (!userId) {
          res.status(403).json({
           success: false,
           message: MESSAGES.INVALID_OR_EXPIRED_TOKEN,
@@ -58,7 +61,7 @@ class AuthMiddleware {
         return;
       }
 
-      const user = await User.findById(decoded.id);
+      const user = await User.findById(userId);
 
       if (!user) {
         res.status(404).json({

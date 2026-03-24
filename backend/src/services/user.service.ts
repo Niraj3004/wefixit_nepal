@@ -37,5 +37,10 @@ export const changePasswordService = async (userId: string, oldPassword?: string
   user.password = await bcrypt.hash(newPassword, salt);
   
   await user.save();
-  return { message: "Password updated successfully" };
+  return { message: "Password changed successfully" };
+};
+
+export const getAdminService = async () => {
+  const admin = await User.findOne({ role: "admin" });
+  return admin;
 };

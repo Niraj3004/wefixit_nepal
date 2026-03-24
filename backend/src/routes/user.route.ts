@@ -14,6 +14,10 @@ router.route("/me").get(AuthMiddleware.isAuthenticated, userController.getMe);
 router.route("/me").put(AuthMiddleware.isAuthenticated, validateZod(updateMeSchema), userController.updateMe);
 
 // Change user password explicitly when logged in
+// Change user password explicitly when logged in
 router.route("/change-password").put(AuthMiddleware.isAuthenticated, validateZod(changePasswordSchema), userController.changePassword);
+
+// Get Admin User ID for Chat functionality
+router.route("/admin").get(AuthMiddleware.isAuthenticated, userController.getAdmin);
 
 export default router;

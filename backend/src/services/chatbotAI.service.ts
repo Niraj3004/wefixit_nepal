@@ -11,8 +11,8 @@ Answer the user's question directly based on these rules. Do not hallucinate pri
 `;
 
 export const processQueryService = async (message: string) => {
-  if (!process.env.GEMINI_API_KEY) {
-    // Graceful fallback if no API key is set
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "your_gemini_api_key") {
+    // Graceful fallback if no API key is set or if it's the default template string
     return {
       reply: "Hello! Our AI is currently taking a break. Please contact support directly or book an appointment!",
       timestamp: new Date().toISOString()
